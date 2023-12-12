@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Películas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="crud.js" type="module"></script>
+</head>
+
+<body style="background-color:#F0F3F4  ;">
+    <div class="container">
+        <div class="content">
+            <div class="title text-center fs-2 ">Registro de Películas</div>
+            <br>
+            <form>
+                <!-- Formulario de ingreso de películas -->
+                <div class="user-details ">
+                    <div class="input-box input-group mb-3">
+                        <span class="details input-group-text ">Título de la Película</span>
+                        <input type="text" id="titulo" class="form-control" placeholder="Ingrese el título" required="">
+                    </div>
+                    <div class="input-box input-group mb-3">
+                        <span class="details input-group-text ">Director</span>
+                        <input type="text" id="director" placeholder="Ingrese el director" class="form-control" required="">
+                    </div>
+                    <div class="input-box input-group mb-3">
+                        <span class="details input-group-text ">Año de Estreno</span>
+                        <input type="number" id="anoEstreno" placeholder="Ingrese el año de estreno" class="form-control" required="">
+                    </div>
+                    <div class="input-box input-group mb-3">
+                        <span class="details input-group-text ">Género</span>
+                        <input type="text" id="genero" placeholder="Ingrese el género" class="form-control" required="">
+                    </div>
+                    <div class="input-box input-group mb-3">
+                        <span class="details input-group-text ">Calificación</span>
+                        <input type="text" id="calificacion" placeholder="Ingrese la calificación" class="form-control" required="">
+                    </div>
+                    <br>
+                    <div class="Registro1">
+                        <button class="Registro1 btn btn-outline-primary" type="button" onclick="crearRegistro()">Registrar</button>
+                    </div>
+                    <br>
+                </div>
+            </form>
+        </div>
+        <!-- Opciones al lado -->
+        <div class="options">
+            <div class="option">
+                <button class="Registro1 btn btn-outline-info " type="button" onclick="actualizarRegistro()">Actualizar</button>
+            </div>
+            <br>
+        </div>
+        
+        <!-- Visualización de películas -->
+        <br>
+        <div class="title-container">
+            <h1 class="title">Películas Registradas</h1>
+        </div>
+        <div id="mensaje"></div>
+        <table id="tablaPeliculas" class="table table-striped table-hove border border-secondar"  >
+            <thead>
+                <tr>
+                    <th>Título de la Película</th>
+                    <th>Director</th>
+                    <th>Año de Estreno</th>
+                    <th>Género</th>
+                    <th>Calificación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaBody"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // JavaScript para la visualización de películas y registro
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        // Configuración de Firebase
+    
+        const firebaseConfig = {
+              apiKey: "AIzaSyBMJsVpnbOwVOiVNbTZScZdet9qlGigDL0",
+              authDomain: "conexion-8ec0d.firebaseapp.com",
+              databaseURL: "https://conexion-8ec0d-default-rtdb.firebaseio.com",
+              projectId: "conexion-8ec0d",
+              storageBucket: "conexion-8ec0d.appspot.com",
+              messagingSenderId: "679910299749",
+              appId: "1:679910299749:web:9800b464879628b4850e8c"
+        };
+
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const tablaBody = document.getElementById('tablaBody');
+        let selectedKey = null; // Variable para almacenar la clave seleccionada para actualizar/eliminar
+        
+        // Obtener referencia a la lista de películas registradas
+        const peliculasRef = ref(database, 'Espin');
+        
+        // Escuchar cambios en los datos
+        onValue(peliculasRef, (snapshot) => {
+            tablaBody.innerHTML = '';
+            
+            // Recorrer los datos y agregarlos a la tabla
+            snapshot.forEach((peliculaSnapshot) => {
+                const pelicula = peliculaSnapshot.val();
+                const row = `<tr>
+                    <td>${pelicula.titulo}</td>
+                    <td>${pelicula.director}</td>
+                    <td>${pelicula.anoEstreno}</td>
+                    <td>${pelicula.genero}</td>
+                    <td>${pelicula.calificacion}</td>
+                    <td>
+                        <button class="btn-modificar btn btn-outline-success" onclick="seleccionarPelicula('${peliculaSnapshot.key}')">Editar</button>
+                        <button class="btn-eliminar btn btn-outline-danger" onclick="eliminarPelicula('${peliculaSnapshot.key}')">Eliminar</button>
+                    </td>
+                </tr>`;
+                tablaBody.innerHTML += row;
+            });
+        });
+
+        function mostrarMensaje(mensaje, esError = false) {
+            const mensajeDiv = document.getElementById('mensaje');
+            mensajeDiv.textContent = mensaje;
+            mensajeDiv.style.color = esError ? 'red' : 'green';
+        }
+
+        window.crearRegistro = async function () {
+            const titulo = document.getElementById("titulo").value.trim();
+            const director = document.getElementById("director").value.trim();
+            const anoEstreno = document.getElementById("anoEstreno").value.trim();
+            const genero = document.getElementById("genero").value.trim();
+            const calificacion = document.getElementById("calificacion").value.trim();
+
+            // Validar los campos
+            if (titulo === '' || director === '' || anoEstreno === '' || genero === '' || calificacion === '') {
+                alert('Por favor, complete todos los campos');
+                return;
+            }
+
+            try {
+                await verificarPeliculaExistente(titulo);
+                crearNuevaPelicula(titulo, director, anoEstreno, genero, calificacion);
+            } catch (error) {
+                alert('Película repetida');
+            }
+        }
+
+        function verificarPeliculaExistente(titulo) {
+            return new Promise((resolve, reject) => {
+                const peliculasRef = ref(database,'Espin');
+                onValue(peliculasRef, (snapshot) => {
+                    let peliculaRepetida = false;
+                    snapshot.forEach((peliculaSnapshot) => {
+                        const pelicula = peliculaSnapshot.val();
+                        if (pelicula.titulo === titulo) {
+                            peliculaRepetida = true;
+                        }
+                    });
+
+                    if (peliculaRepetida) {
+                        reject(); // Película repetida
+                    } else {
+                        resolve(); // Película no repetida
+                    }
+                });
+            });
+        }
+
+        function crearNuevaPelicula(titulo, director, anoEstreno, genero, calificacion) {
+            push(ref(database,'Espin'), {
+                titulo: titulo,
+                director: director,
+                anoEstreno: anoEstreno,
+                genero: genero,
+                calificacion: calificacion
+            });
+
+            alert('Registro exitoso');
+            // Limpiar campos después del registro
+            limpiarCampos();
+        }
+
+        function limpiarCampos() {
+            document.getElementById('titulo').value = '';
+            document.getElementById('director').value = '';
+            document.getElementById('anoEstreno').value = '';
+            document.getElementById('genero').value = '';
+            document.getElementById('calificacion').value = '';
+        }
+
+        window.seleccionarPelicula = function (key) {
+            selectedKey = key;
+            // Obtener la película seleccionada
+            const peliculaRef = ref(database, `Espin/${key}`);
+            onValue(peliculaRef, (snapshot) => {
+                const pelicula = snapshot.val();
+                // Llenar el formulario con los datos de la película seleccionada
+                document.getElementById("titulo").value = pelicula.titulo;
+                document.getElementById("director").value = pelicula.director;
+                document.getElementById("anoEstreno").value = pelicula.anoEstreno;
+                document.getElementById("genero").value = pelicula.genero;
+                document.getElementById("calificacion").value = pelicula.calificacion;
+            });
+        }
+
+        window.actualizarRegistro = function () {
+            if (selectedKey) {
+                // Obtener los nuevos valores del formulario
+                const titulo = document.getElementById("titulo").value.trim();
+                const director = document.getElementById("director").value.trim();
+                const anoEstreno = document.getElementById("anoEstreno").value.trim();
+                const genero = document.getElementById("genero").value.trim();
+                const calificacion = document.getElementById("calificacion").value.trim();
+
+                // Validar los campos
+                if (titulo === '' || director === '' || anoEstreno === '' || genero === '' || calificacion === '') {
+                    alert('Por favor, complete todos los campos');
+                    return;
+                }
+
+                // Actualizar los datos en Firebase
+                set(ref(database, `Espin/${selectedKey}`), {
+                    titulo: titulo,
+                    director: director,
+                    anoEstreno: anoEstreno,
+                    genero: genero,
+                    calificacion: calificacion
+                });
+
+                alert('Registro actualizado exitosamente');
+                // Limpiar campos después de la actualización
+                limpiarCampos();
+                selectedKey = null;
+            } else {
+                alert('Por favor, seleccione una película para actualizar');
+            }
+        }
+
+        window.eliminarPelicula = function (key) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta película?')) {
+                remove(ref(database, `Espin/${key}`))
+                    .then(() => {
+                        mostrarMensaje('Película eliminada correctamente', false);
+                    })
+                    .catch((error) => {
+                        mostrarMensaje(`Error al eliminar película: ${error}`, true);
+                    });
+            }
+        };
+    </script>
+</body>
+
+</html>
