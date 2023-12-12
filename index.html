@@ -16,7 +16,7 @@
             <div class="title text-center fs-2 ">Registro de Películas</div>
             <br>
             <form>
-                <!-- Formulario de ingreso de películas -->
+                
                 <div class="user-details ">
                     <div class="input-box input-group mb-3">
                         <span class="details input-group-text ">Título de la Película</span>
@@ -46,7 +46,7 @@
                 </div>
             </form>
         </div>
-        <!-- Opciones al lado -->
+        
         <div class="options">
             <div class="option">
                 <button class="Registro1 btn btn-outline-info " type="button" onclick="actualizarRegistro()">Actualizar</button>
@@ -54,7 +54,7 @@
             <br>
         </div>
         
-        <!-- Visualización de películas -->
+        
         <br>
         <div class="title-container">
             <h1 class="title">Películas Registradas</h1>
@@ -76,12 +76,11 @@
     </div>
 
     <script type="module">
-        // JavaScript para la visualización de películas y registro
+        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getDatabase, ref, onValue, remove, push, set } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-        // Configuración de Firebase
-    
+        
         const firebaseConfig = {
               apiKey: "AIzaSyBMJsVpnbOwVOiVNbTZScZdet9qlGigDL0",
               authDomain: "conexion-8ec0d.firebaseapp.com",
@@ -97,16 +96,15 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const tablaBody = document.getElementById('tablaBody');
-        let selectedKey = null; // Variable para almacenar la clave seleccionada para actualizar/eliminar
-        
-        // Obtener referencia a la lista de películas registradas
+        let selectedKey = null; 
+
         const peliculasRef = ref(database, 'Espin');
         
-        // Escuchar cambios en los datos
+        
         onValue(peliculasRef, (snapshot) => {
             tablaBody.innerHTML = '';
             
-            // Recorrer los datos y agregarlos a la tabla
+            
             snapshot.forEach((peliculaSnapshot) => {
                 const pelicula = peliculaSnapshot.val();
                 const row = `<tr>
@@ -137,7 +135,7 @@
             const genero = document.getElementById("genero").value.trim();
             const calificacion = document.getElementById("calificacion").value.trim();
 
-            // Validar los campos
+            
             if (titulo === '' || director === '' || anoEstreno === '' || genero === '' || calificacion === '') {
                 alert('Por favor, complete todos los campos');
                 return;
@@ -164,9 +162,9 @@
                     });
 
                     if (peliculaRepetida) {
-                        reject(); // Película repetida
+                        reject(); 
                     } else {
-                        resolve(); // Película no repetida
+                        resolve(); 
                     }
                 });
             });
@@ -182,7 +180,7 @@
             });
 
             alert('Registro exitoso');
-            // Limpiar campos después del registro
+            
             limpiarCampos();
         }
 
@@ -196,11 +194,11 @@
 
         window.seleccionarPelicula = function (key) {
             selectedKey = key;
-            // Obtener la película seleccionada
+            
             const peliculaRef = ref(database, `Espin/${key}`);
             onValue(peliculaRef, (snapshot) => {
                 const pelicula = snapshot.val();
-                // Llenar el formulario con los datos de la película seleccionada
+                
                 document.getElementById("titulo").value = pelicula.titulo;
                 document.getElementById("director").value = pelicula.director;
                 document.getElementById("anoEstreno").value = pelicula.anoEstreno;
@@ -218,13 +216,13 @@
                 const genero = document.getElementById("genero").value.trim();
                 const calificacion = document.getElementById("calificacion").value.trim();
 
-                // Validar los campos
+                
                 if (titulo === '' || director === '' || anoEstreno === '' || genero === '' || calificacion === '') {
                     alert('Por favor, complete todos los campos');
                     return;
                 }
 
-                // Actualizar los datos en Firebase
+                
                 set(ref(database, `Espin/${selectedKey}`), {
                     titulo: titulo,
                     director: director,
@@ -234,7 +232,7 @@
                 });
 
                 alert('Registro actualizado exitosamente');
-                // Limpiar campos después de la actualización
+                
                 limpiarCampos();
                 selectedKey = null;
             } else {
